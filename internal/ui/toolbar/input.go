@@ -108,6 +108,7 @@ func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 		if msg.Type == tea.KeyEscape {
 			return tea.Sequence(
 				actions.ToggleNumbersCmd(false),
+				actions.SetWorkListFocusCmd(-1),
 				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 			)
 		}
