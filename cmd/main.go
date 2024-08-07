@@ -5,7 +5,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/xprnio/work-queue/internal/database"
-	"github.com/xprnio/work-queue/internal/ui/application"
+	"github.com/xprnio/work-queue/internal/ui/app"
 	"github.com/xprnio/work-queue/internal/wq"
 )
 
@@ -22,7 +22,7 @@ func main() {
 	}
 
 	p := tea.NewProgram(
-		application.New(manager),
+		app.New(manager),
 		tea.WithAltScreen(),
 	)
 	if _, err := p.Run(); err != nil {
