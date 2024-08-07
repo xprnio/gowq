@@ -134,12 +134,12 @@ func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 				)
 			}
 
-      return tea.Sequence(
-        actions.SetWorkListFocusCmd(-1),
-        actions.ToggleNumbersCmd(false),
-        actions.WorkTaggedCmd(mode.Index, value),
-        actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
-      )
+			return tea.Sequence(
+				actions.SetWorkListFocusCmd(-1),
+				actions.ToggleNumbersCmd(false),
+				actions.WorkTaggedCmd(mode.Index, value),
+				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
+			)
 		}
 
 	case state.ToolbarModeMove:

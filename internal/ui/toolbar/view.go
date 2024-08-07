@@ -104,8 +104,8 @@ func (t *Model) viewInput() string {
 		}
 
 		return ""
-  case state.ToolbarModeTag:
-    return t.input.View()
+	case state.ToolbarModeTag:
+		return t.input.View()
 	case state.ToolbarModeMove:
 		if mode.Item == nil {
 			return t.input.View()
