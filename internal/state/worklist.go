@@ -4,8 +4,15 @@ type WorkListState struct {
 	ShowNumbers   bool
 	ShowCompleted bool
 
-  Focused *workListFocusedState
-	Moving *workListMovingState
+	Focused *workListFocusedState
+	Moving  *workListMovingState
+}
+
+func NewWorkListState() WorkListState {
+	return WorkListState{
+		ShowNumbers:   false,
+		ShowCompleted: false,
+	}
 }
 
 type workListFocusedState struct {

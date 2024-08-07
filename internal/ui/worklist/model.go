@@ -12,7 +12,7 @@ import (
 )
 
 type Model struct {
-	manager *wq.Manager
+	manager  *wq.Manager
 	viewport viewport.Model
 
 	state state.WorkListState
@@ -24,12 +24,13 @@ type Model struct {
 }
 
 func New(man *wq.Manager) *Model {
-	l := &Model{}
-	l.manager = man
+	return &Model{
+		manager: man,
+		state:   state.NewWorkListState(),
 
-	l.style = baseStyle
-	l.itemStyle = itemStyle
-	return l
+		style:     baseStyle,
+		itemStyle: itemStyle,
+	}
 }
 
 func (l *Model) Init() tea.Cmd {

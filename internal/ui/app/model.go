@@ -20,13 +20,12 @@ type Model struct {
 }
 
 func New(manager *wq.Manager) *Model {
-	m := &Model{}
-	m.header = header.New(manager)
-	m.manager = manager
-	m.list = worklist.New(m.manager)
-	m.toolbar = toolbar.New()
-
-	return m
+	return &Model{
+		manager: manager,
+		header:  header.New(manager),
+		list:    worklist.New(manager),
+		toolbar: toolbar.New(),
+	}
 }
 
 func (m *Model) Init() tea.Cmd {

@@ -19,11 +19,11 @@ type Model struct {
 }
 
 func New() *Model {
-	t := &Model{}
-	t.input = textinput.New()
-	t.state = state.NewToolbarState()
-	t.style = baseStyle
-	return t
+	return &Model{
+		input: textinput.New(),
+		state: state.NewToolbarState(),
+		style: baseStyle,
+	}
 }
 
 func (t *Model) Init() tea.Cmd {
