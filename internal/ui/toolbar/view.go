@@ -4,22 +4,23 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/xprnio/work-queue/internal/ui/state"
 	"github.com/xprnio/work-queue/internal/wq"
 )
 
 func (t *Model) viewMode() string {
 	switch t.mode.(type) {
-	case ModeNormal:
+	case state.ToolbarModeNormal:
 		return modeStyle.Render("NORMAL")
-	case ModeAdd:
+	case state.ToolbarModeAdd:
 		return modeStyle.Render("ADD")
-	case ModeEdit:
+	case state.ToolbarModeEdit:
 		return modeStyle.Render("EDIT")
-	case ModeComplete:
+	case state.ToolbarModeComplete:
 		return modeStyle.Render("COMPLETE")
-	case ModeMove:
+	case state.ToolbarModeMove:
 		return modeStyle.Render("MOVE")
-	case ModeDelete:
+	case state.ToolbarModeDelete:
 		return modeStyle.Render("DELETE")
 	default:
 		return ""
@@ -38,7 +39,7 @@ func (t *Model) viewContextKeys() string {
 	keys := make([]string, 0)
 
 	switch mode := t.mode.(type) {
-	case ModeNormal:
+	case state.ToolbarModeNormal:
 		keys = append(keys,
 			"[a]dd",
 			"[e]dit",
@@ -54,16 +55,16 @@ func (t *Model) viewContextKeys() string {
 
 		keys = append(keys, "[q]uit")
 	case
-		ModeAdd,
-		ModeComplete,
-		ModeDelete:
+	 state.ToolbarModeAdd,
+	 state.ToolbarModeComplete,
+	 state.ToolbarModeDelete:
 		keys = append(keys, "[esc] cancel")
-	case ModeEdit:
+	case state.ToolbarModeEdit:
 		if mode.Index >= 0 {
 			keys = append(keys, "[enter] confirm")
 		}
 		keys = append(keys, "[esc] cancel")
-	case ModeMove:
+	case state.ToolbarModeMove:
 		if mode.Item != nil {
 			keys = append(keys, "[enter] confirm")
 		}
@@ -74,18 +75,18 @@ func (t *Model) viewContextKeys() string {
 	return t.viewKeys(keys)
 }
 
-func (t Model) viewInput() string {
+func (t *Model) viewInput() string {
 	if t.err != nil {
 		return t.err.Error()
 	}
 
 	switch mode := t.mode.(type) {
 	case
-		ModeAdd,
-		ModeComplete,
-		ModeDelete:
+	 state.ToolbarModeAdd,
+	 state.ToolbarModeComplete,
+	 state.ToolbarModeDelete:
 		return t.input.View()
-	case ModeEdit:
+	case state.ToolbarModeEdit:
 		if mode.Index < 0 {
 			return t.input.View()
 		}
@@ -95,7 +96,7 @@ func (t Model) viewInput() string {
 		}
 
 		return ""
-	case ModeMove:
+	case state.ToolbarModeMove:
 		if mode.Item == nil {
 			return t.input.View()
 		}
@@ -116,7 +117,7 @@ func (t *Model) viewKeys(keys []string) string {
 	)
 }
 
-func (t Model) viewKey(key string) string {
+func (t *Model) viewKey(key string) string {
 	// do not apply special styling in 'normal' mode
 	// if t.mode == ToolbarModeNormal {
 	// 	return fmt.Sprintf(" %s ", key)

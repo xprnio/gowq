@@ -8,7 +8,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/xprnio/work-queue/internal/ui/actions"
-	"github.com/xprnio/work-queue/internal/ui/toolbar"
+	"github.com/xprnio/work-queue/internal/ui/state"
 )
 
 type Model struct {
@@ -88,21 +88,21 @@ func (l *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case actions.ScrollWorkListMsg:
 		l.Viewport.YOffset += msg.Direction
 		return l, actions.RefreshWorkListCmd()
-	case toolbar.ToolbarModeMsg:
+	case actions.ToolbarModeMsg:
 		switch mode := msg.Mode.(type) {
-		case toolbar.ModeEdit:
+		case state.ToolbarModeEdit:
 			if mode.Index >= 0 && mode.Name == "" {
 				item := l.Manager.Get(mode.Index)
 				if item == nil {
 					return l, tea.Sequence(
 						actions.ToggleNumbersCmd(false),
-						toolbar.ToolbarModeCmd(toolbar.ModeNormal{}),
+						actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 						actions.RefreshWorkListCmd(),
 						wq.ErrorCmd(wq.InvalidIndexErr),
 					)
 				}
 
-				return l, toolbar.ToolbarModeCmd(toolbar.ModeEdit{
+				return l, actions.ToolbarModeCmd(state.ToolbarModeEdit{
 					Index: mode.Index,
 					Name:  item.Name,
 				})
@@ -113,7 +113,7 @@ func (l *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if item == nil {
 			return l, tea.Sequence(
 				actions.ToggleNumbersCmd(false),
-				toolbar.ToolbarModeCmd(toolbar.ModeNormal{}),
+				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 				actions.RefreshWorkListCmd(),
 				wq.ErrorCmd(wq.InvalidIndexErr),
 			)
@@ -122,7 +122,7 @@ func (l *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err := l.Manager.Edit(msg.Index, msg.Name); err != nil {
 			return l, tea.Sequence(
 				actions.ToggleNumbersCmd(false),
-				toolbar.ToolbarModeCmd(toolbar.ModeNormal{}),
+				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 				actions.RefreshWorkListCmd(),
 				wq.ErrorCmd(err),
 			)
@@ -147,7 +147,7 @@ func (l *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if item == nil {
 			return l, tea.Sequence(
 				actions.ToggleNumbersCmd(false),
-				toolbar.ToolbarModeCmd(toolbar.ModeNormal{}),
+				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 				actions.RefreshWorkListCmd(),
 				wq.ErrorCmd(wq.InvalidIndexErr),
 			)
@@ -159,7 +159,7 @@ func (l *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return l, tea.Sequence(
 			actions.ToggleNumbersCmd(false),
 			actions.RefreshWorkListCmd(),
-			toolbar.ToolbarModeCmd(toolbar.ModeMove{Item: item}),
+			actions.ToolbarModeCmd(state.ToolbarModeMove{Item: item}),
 		)
 	case actions.MoveWorkMsg:
 		switch msg.Direction {

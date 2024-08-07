@@ -6,21 +6,22 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/xprnio/work-queue/internal/ui/actions"
+	"github.com/xprnio/work-queue/internal/ui/state"
 	"github.com/xprnio/work-queue/internal/wq"
 )
 
 func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 	switch mode := t.mode.(type) {
-	case ModeNormal:
+	case state.ToolbarModeNormal:
 		switch msg.String() {
 		case "a":
 			return tea.Sequence(
-				ToolbarModeCmd(ModeAdd{}),
+				actions.ToolbarModeCmd(state.ToolbarModeAdd{}),
 			)
 		case "e":
 			return tea.Sequence(
 				actions.ToggleNumbersCmd(true),
-				ToolbarModeCmd(ModeEdit{Index: -1}),
+				actions.ToolbarModeCmd(state.ToolbarModeEdit{Index: -1}),
 			)
 		case "up", "k":
 			return actions.ScrollWorkListCmd(-1)
@@ -33,39 +34,39 @@ func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 			return tea.Sequence(
 				actions.ToggleNumbersCmd(true),
 				actions.ToggleCompletedVisibilityCmd(false),
-				ToolbarModeCmd(ModeMove{}),
+				actions.ToolbarModeCmd(state.ToolbarModeMove{}),
 			)
 		case "c":
 			return tea.Sequence(
 				actions.ToggleNumbersCmd(true),
-				ToolbarModeCmd(ModeComplete{}),
+				actions.ToolbarModeCmd(state.ToolbarModeComplete{}),
 			)
 		case "d":
 			return tea.Sequence(
 				actions.ToggleNumbersCmd(true),
-				ToolbarModeCmd(ModeDelete{}),
+				actions.ToolbarModeCmd(state.ToolbarModeDelete{}),
 			)
 		case "q":
 			return tea.Quit
 		}
-	case ModeAdd:
+	case state.ToolbarModeAdd:
 		if msg.Type == tea.KeyEscape {
-			return ToolbarModeCmd(ModeNormal{})
+			return actions.ToolbarModeCmd(state.ToolbarModeNormal{})
 		}
 
 		if msg.Type == tea.KeyEnter {
 			name := strings.TrimSpace(t.input.Value())
 			return tea.Sequence(
 				actions.WorkAddedCmd(name),
-				ToolbarModeCmd(ModeNormal{}),
+				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 			)
 		}
-	case ModeEdit:
+	case state.ToolbarModeEdit:
 		if msg.Type == tea.KeyEscape {
 			return tea.Sequence(
 				actions.SetWorkListFocusCmd(-1),
 				actions.ToggleNumbersCmd(false),
-				ToolbarModeCmd(ModeNormal{}),
+				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 			)
 		}
 
@@ -76,7 +77,7 @@ func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 				i, err := strconv.Atoi(value)
 				if err != nil {
 					return tea.Sequence(
-						ToolbarModeCmd(ModeNormal{}),
+						actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 						wq.ErrorCmd(wq.InvalidIndexErr),
 					)
 				}
@@ -84,7 +85,7 @@ func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 				return tea.Sequence(
 					actions.SetWorkListFocusCmd(i-1),
 					actions.ToggleNumbersCmd(false),
-					ToolbarModeCmd(ModeEdit{Index: i - 1}),
+					actions.ToolbarModeCmd(state.ToolbarModeEdit{Index: i - 1}),
 				)
 			}
 
@@ -92,17 +93,17 @@ func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 				actions.SetWorkListFocusCmd(-1),
 				actions.ToggleNumbersCmd(false),
 				actions.WorkEditedCmd(mode.Index, value),
-				ToolbarModeCmd(ModeNormal{}),
+				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 			)
 		}
 
-	case ModeMove:
+	case state.ToolbarModeMove:
 		if msg.Type == tea.KeyEscape {
 			return tea.Sequence(
 				actions.FinishMovingWorkCmd(false),
 				actions.ToggleNumbersCmd(false),
 				actions.ToggleCompletedVisibilityCmd(t.ShowCompleted),
-				ToolbarModeCmd(ModeNormal{}),
+				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 			)
 		}
 
@@ -114,7 +115,7 @@ func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 					return tea.Sequence(
 						actions.ToggleNumbersCmd(false),
 						actions.ToggleCompletedVisibilityCmd(t.ShowCompleted),
-						ToolbarModeCmd(ModeNormal{}),
+						actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 						wq.ErrorCmd(wq.InvalidIndexErr),
 					)
 				}
@@ -126,7 +127,7 @@ func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 				actions.FinishMovingWorkCmd(true),
 				actions.ToggleCompletedVisibilityCmd(t.ShowCompleted),
 				actions.ToggleNumbersCmd(false),
-				ToolbarModeCmd(ModeNormal{}),
+				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 			)
 		}
 
@@ -136,11 +137,11 @@ func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 		case "down", "j":
 			return actions.MoveWorkCmd(actions.MovementDirDown)
 		}
-	case ModeComplete:
+	case state.ToolbarModeComplete:
 		if msg.Type == tea.KeyEscape {
 			return tea.Sequence(
 				actions.ToggleNumbersCmd(false),
-				ToolbarModeCmd(ModeNormal{}),
+				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 			)
 		}
 
@@ -150,7 +151,7 @@ func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 			if err != nil {
 				return tea.Sequence(
 					actions.ToggleNumbersCmd(false),
-					ToolbarModeCmd(ModeNormal{}),
+					actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 					wq.ErrorCmd(wq.InvalidIndexErr),
 				)
 			}
@@ -158,14 +159,14 @@ func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 			return tea.Sequence(
 				actions.WorkCompletedCmd(index-1),
 				actions.ToggleNumbersCmd(false),
-				ToolbarModeCmd(ModeNormal{}),
+				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 			)
 		}
-	case ModeDelete:
+	case state.ToolbarModeDelete:
 		if msg.Type == tea.KeyEscape {
 			return tea.Sequence(
 				actions.ToggleNumbersCmd(false),
-				ToolbarModeCmd(ModeNormal{}),
+				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 			)
 		}
 
@@ -175,14 +176,14 @@ func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 			if err != nil {
 				return tea.Sequence(
 					actions.ToggleNumbersCmd(false),
-					ToolbarModeCmd(ModeNormal{}),
+					actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 					wq.ErrorCmd(wq.InvalidIndexErr),
 				)
 			}
 
 			return tea.Sequence(
 				actions.ToggleNumbersCmd(false),
-				ToolbarModeCmd(ModeNormal{}),
+				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 				actions.WorkDeletedCmd(index-1),
 			)
 		}

@@ -4,12 +4,14 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/xprnio/work-queue/internal/ui/actions"
+	"github.com/xprnio/work-queue/internal/ui/state"
 	"github.com/xprnio/work-queue/internal/wq"
 )
 
 type Model struct {
 	width int
-	mode  ToolbarMode
+	mode  state.ToolbarMode
 	style lipgloss.Style
 	err   error
 
@@ -20,7 +22,7 @@ type Model struct {
 
 func New() *Model {
 	t := &Model{}
-	t.mode = ModeNormal{}
+	t.mode = state.ToolbarModeNormal{}
 	t.style = baseStyle
 
 	t.input = textinput.New()
@@ -44,7 +46,7 @@ func (t *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 		t.err = msg.Err
 		return t, nil
 
-	case ToolbarModeMsg:
+	case actions.ToolbarModeMsg:
 		if cmd := t.updateToolbarMode(msg); cmd != nil {
 			cmds = append(cmds, cmd)
 		}
@@ -82,16 +84,16 @@ func (t *Model) View() string {
 	)
 }
 
-func (t *Model) updateToolbarMode(msg ToolbarModeMsg) tea.Cmd {
+func (t *Model) updateToolbarMode(msg actions.ToolbarModeMsg) tea.Cmd {
 	t.mode = msg.Mode
 	t.err = nil
 
 	switch mode := t.mode.(type) {
-	case ModeAdd:
+	case state.ToolbarModeAdd:
 		t.input.Prompt = "name: "
 		t.input.SetValue("")
 		t.input.Focus()
-	case ModeEdit:
+	case state.ToolbarModeEdit:
 		if mode.Index < 0 {
 			t.input.Prompt = "edit item number: "
 			t.input.SetValue("")
@@ -102,15 +104,15 @@ func (t *Model) updateToolbarMode(msg ToolbarModeMsg) tea.Cmd {
 		t.input.Prompt = "name: "
 		t.input.SetValue(mode.Name)
 		t.input.Focus()
-	case ModeMove:
+	case state.ToolbarModeMove:
 		t.input.Prompt = "move item number: "
 		t.input.SetValue("")
 		t.input.Focus()
-	case ModeComplete:
+	case state.ToolbarModeComplete:
 		t.input.Prompt = "complete item number: "
 		t.input.SetValue("")
 		t.input.Focus()
-	case ModeDelete:
+	case state.ToolbarModeDelete:
 		t.input.Prompt = "delete item number: "
 		t.input.SetValue("")
 		t.input.Focus()
