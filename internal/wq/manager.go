@@ -1,6 +1,8 @@
 package wq
 
 import (
+	"strings"
+
 	"github.com/sqids/sqids-go"
 	"github.com/xprnio/work-queue/internal/database"
 )
@@ -89,6 +91,22 @@ func (m *Manager) Edit(i int, name string) error {
 		return m.Flush()
 	}
 
+	return nil
+}
+
+func (m *Manager) EditTags(i int, t string) error {
+	if i >= 0 && i < m.Len() {
+		tags := make(database.WorkItemTags, 0)
+		for _, tag := range strings.Split(t, ",") {
+			tag = strings.TrimSpace(tag)
+			tag = strings.ToLower(tag)
+			if len(tag) > 0 {
+				tags = append(tags, tag)
+			}
+		}
+		m.Queue[i].Tags = tags
+		return m.Flush()
+	}
 	return nil
 }
 

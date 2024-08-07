@@ -101,6 +101,17 @@ func (t *Model) updateToolbarMode(msg actions.ToolbarModeMsg) tea.Cmd {
 		t.input.Prompt = "name: "
 		t.input.SetValue(mode.Name)
 		t.input.Focus()
+	case state.ToolbarModeTag:
+		if mode.Index < 0 {
+			t.input.Prompt = "tag item number: "
+			t.input.SetValue("")
+			t.input.Focus()
+			break
+		}
+
+		t.input.Prompt = "tags: "
+		t.input.SetValue(mode.Tags)
+		t.input.Focus()
 	case state.ToolbarModeMove:
 		t.input.Prompt = "move item number: "
 		t.input.SetValue("")

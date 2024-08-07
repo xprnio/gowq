@@ -1,6 +1,8 @@
 package worklist
 
 import (
+	"strings"
+
 	"github.com/charmbracelet/bubbles/viewport"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/xprnio/work-queue/internal/database"
@@ -93,6 +95,25 @@ func (l *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					Name:  item.Name,
 				})
 			}
+		case state.ToolbarModeTag:
+			if mode.Index >= 0 && mode.Tags == "" {
+				item := l.manager.Get(mode.Index)
+				if item == nil {
+					return l, tea.Sequence(
+						actions.ToggleNumbersCmd(false),
+						actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
+						actions.RefreshWorkListCmd(),
+						wq.ErrorCmd(wq.InvalidIndexErr),
+					)
+				}
+
+				if len(item.Tags) > 0 {
+					return l, actions.ToolbarModeCmd(state.ToolbarModeTag{
+						Index: mode.Index,
+						Tags:  strings.Join(item.Tags, ","),
+					})
+				}
+			}
 		}
 	case actions.WorkEditedMsg:
 		item := l.manager.Get(msg.Index)
@@ -106,6 +127,27 @@ func (l *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		if err := l.manager.Edit(msg.Index, msg.Name); err != nil {
+			return l, tea.Sequence(
+				actions.ToggleNumbersCmd(false),
+				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
+				actions.RefreshWorkListCmd(),
+				wq.ErrorCmd(err),
+			)
+		}
+
+		l.queue = l.RefreshQueue()
+	case actions.WorkTaggedMsg:
+		item := l.manager.Get(msg.Index)
+		if item == nil {
+			return l, tea.Sequence(
+				actions.ToggleNumbersCmd(false),
+				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
+				actions.RefreshWorkListCmd(),
+				wq.ErrorCmd(wq.InvalidIndexErr),
+			)
+		}
+
+		if err := l.manager.EditTags(msg.Index, msg.Tags); err != nil {
 			return l, tea.Sequence(
 				actions.ToggleNumbersCmd(false),
 				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),

@@ -30,3 +30,7 @@ type ToolbarModeEdit struct {
 }
 type ToolbarModeComplete struct{}
 type ToolbarModeDelete struct{}
+type ToolbarModeTag struct {
+	Index int
+	Tags  string
+}

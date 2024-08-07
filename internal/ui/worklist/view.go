@@ -53,14 +53,14 @@ func (l *Model) viewItemTags(item database.WorkItem) string {
 		return fmt.Sprintf(" [-] ")
 	}
 
-  tags := ""
-  for i, tag := range item.Tags {
-    if i > 0 {
-      tags += ", "
-    }
+	tags := ""
+	for i, tag := range item.Tags {
+		if i > 0 {
+			tags += ", "
+		}
 
-    tags += tag
-  }
+		tags += tag
+	}
 	return fmt.Sprintf(" [%s] ", tags)
 }
 

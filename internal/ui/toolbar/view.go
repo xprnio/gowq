@@ -16,6 +16,8 @@ func (t *Model) viewMode() string {
 		return modeStyle.Render("ADD")
 	case state.ToolbarModeEdit:
 		return modeStyle.Render("EDIT")
+	case state.ToolbarModeTag:
+		return modeStyle.Render("TAG")
 	case state.ToolbarModeComplete:
 		return modeStyle.Render("COMPLETE")
 	case state.ToolbarModeMove:
@@ -42,6 +44,7 @@ func (t *Model) viewContextKeys() string {
 	case state.ToolbarModeNormal:
 		keys = append(keys,
 			"[a]dd",
+			"[t]ag",
 			"[e]dit",
 			"[c]omplete",
 			"[d]elete",
@@ -60,6 +63,11 @@ func (t *Model) viewContextKeys() string {
 		state.ToolbarModeDelete:
 		keys = append(keys, "[esc] cancel")
 	case state.ToolbarModeEdit:
+		if mode.Index >= 0 {
+			keys = append(keys, "[enter] confirm")
+		}
+		keys = append(keys, "[esc] cancel")
+	case state.ToolbarModeTag:
 		if mode.Index >= 0 {
 			keys = append(keys, "[enter] confirm")
 		}
@@ -96,6 +104,8 @@ func (t *Model) viewInput() string {
 		}
 
 		return ""
+  case state.ToolbarModeTag:
+    return t.input.View()
 	case state.ToolbarModeMove:
 		if mode.Item == nil {
 			return t.input.View()

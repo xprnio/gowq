@@ -39,8 +39,8 @@ func (t *WorkItemTags) Scan(value interface{}) error {
 	return fmt.Errorf("could not scan %T as WorkItemTags", value)
 }
 
-func (t *WorkItemTags) Value() (driver.Value, error) {
-	return strings.Join(*t, ","), nil
+func (t WorkItemTags) Value() (driver.Value, error) {
+	return strings.Join(t, ","), nil
 }
 
 func (w *WorkItem) Deleted() *WorkItem {

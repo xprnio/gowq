@@ -22,6 +22,11 @@ type WorkEditedMsg struct {
 	Name  string
 }
 
+type WorkTaggedMsg struct {
+	Index int
+	Tags  string
+}
+
 type FinishMovingWorkMsg struct {
 	Commit bool
 }
@@ -59,6 +64,12 @@ func WorkDeletedCmd(index int) tea.Cmd {
 func WorkEditedCmd(i int, name string) tea.Cmd {
 	return func() tea.Msg {
 		return WorkEditedMsg{i, name}
+	}
+}
+
+func WorkTaggedCmd(i int, tags string) tea.Cmd {
+	return func() tea.Msg {
+		return WorkTaggedMsg{i, tags}
 	}
 }
 

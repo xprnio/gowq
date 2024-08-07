@@ -23,6 +23,11 @@ func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 				actions.ToggleNumbersCmd(true),
 				actions.ToolbarModeCmd(state.ToolbarModeEdit{Index: -1}),
 			)
+		case "t":
+			return tea.Sequence(
+				actions.ToggleNumbersCmd(true),
+				actions.ToolbarModeCmd(state.ToolbarModeTag{Index: -1}),
+			)
 		case "up", "k":
 			return actions.ScrollWorkListCmd(-1)
 		case "down", "j":
@@ -85,7 +90,9 @@ func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 				return tea.Sequence(
 					actions.SetWorkListFocusCmd(i-1),
 					actions.ToggleNumbersCmd(false),
-					actions.ToolbarModeCmd(state.ToolbarModeEdit{Index: i - 1}),
+					actions.ToolbarModeCmd(state.ToolbarModeEdit{
+						Index: i - 1,
+					}),
 				)
 			}
 
@@ -95,6 +102,44 @@ func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 				actions.WorkEditedCmd(mode.Index, value),
 				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 			)
+		}
+
+	case state.ToolbarModeTag:
+		if msg.Type == tea.KeyEscape {
+			return tea.Sequence(
+				actions.ToggleNumbersCmd(false),
+				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
+			)
+		}
+
+		if msg.Type == tea.KeyEnter {
+			value := t.input.Value()
+
+			if mode.Index < 0 {
+				// the item was just selected
+				i, err := strconv.Atoi(value)
+				if err != nil {
+					return tea.Sequence(
+						actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
+						wq.ErrorCmd(wq.InvalidIndexErr),
+					)
+				}
+
+				return tea.Sequence(
+					actions.SetWorkListFocusCmd(i-1),
+					actions.ToggleNumbersCmd(false),
+					actions.ToolbarModeCmd(state.ToolbarModeTag{
+						Index: i - 1,
+					}),
+				)
+			}
+
+      return tea.Sequence(
+        actions.SetWorkListFocusCmd(-1),
+        actions.ToggleNumbersCmd(false),
+        actions.WorkTaggedCmd(mode.Index, value),
+        actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
+      )
 		}
 
 	case state.ToolbarModeMove:
