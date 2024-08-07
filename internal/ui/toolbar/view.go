@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/xprnio/work-queue/internal/ui/state"
+	"github.com/xprnio/work-queue/internal/state"
 	"github.com/xprnio/work-queue/internal/wq"
 )
 

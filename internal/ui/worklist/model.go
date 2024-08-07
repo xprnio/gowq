@@ -7,8 +7,8 @@ import (
 	"github.com/xprnio/work-queue/internal/wq"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/xprnio/work-queue/internal/ui/actions"
-	"github.com/xprnio/work-queue/internal/ui/state"
+	"github.com/xprnio/work-queue/internal/actions"
+	"github.com/xprnio/work-queue/internal/state"
 )
 
 type Model struct {

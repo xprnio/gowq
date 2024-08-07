@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/xprnio/work-queue/internal/ui/actions"
-	"github.com/xprnio/work-queue/internal/ui/state"
+	"github.com/xprnio/work-queue/internal/actions"
+	"github.com/xprnio/work-queue/internal/state"
 	"github.com/xprnio/work-queue/internal/wq"
 )
 
