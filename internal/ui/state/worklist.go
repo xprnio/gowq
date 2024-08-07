@@ -1,8 +1,31 @@
 package state
 
-type WorkListState interface{}
+type WorkListState struct {
+	ShowNumbers   bool
+	ShowCompleted bool
 
-type WorkListMovingState struct {
+  Focused *workListFocusedState
+	Moving *workListMovingState
+}
+
+type workListFocusedState struct {
+	Index int
+}
+
+type workListMovingState struct {
 	Source int
 	Active int
+}
+
+func WorkListFocusedState(index int) *workListFocusedState {
+	return &workListFocusedState{
+		Index: index,
+	}
+}
+
+func WorkListMovingState(source int) *workListMovingState {
+	return &workListMovingState{
+		Source: source,
+		Active: source,
+	}
 }

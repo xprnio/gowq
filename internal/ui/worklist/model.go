@@ -12,31 +12,20 @@ import (
 )
 
 type Model struct {
-	Manager *wq.Manager
-
-	Viewport viewport.Model
-
-	FocusedItem int
+	manager *wq.Manager
+	viewport viewport.Model
 
 	state state.WorkListState
+	queue []database.WorkItem
 
-	// item numbers
-	ShowNumbers bool
-
-	// completion visibility
-	ShowCompleted bool
-
+	style         lipgloss.Style
+	itemStyle     lipgloss.Style
 	width, height int
-
-	queue     []database.WorkItem
-	style     lipgloss.Style
-	itemStyle lipgloss.Style
 }
 
 func New(man *wq.Manager) *Model {
 	l := &Model{}
-	l.Manager = man
-	l.FocusedItem = -1
+	l.manager = man
 
 	l.style = baseStyle
 	l.itemStyle = itemStyle
@@ -56,8 +45,8 @@ func (l *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// TODO: get rid of magic number 3
 
 		if l.height == 0 {
-			l.Viewport = viewport.New(msg.Width, msg.Height-3)
-			l.Viewport.SetContent(l.viewContent())
+			l.viewport = viewport.New(msg.Width, msg.Height-3)
+			l.viewport.SetContent(l.viewContent())
 		}
 
 		l.width = msg.Width
@@ -65,30 +54,30 @@ func (l *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		l.style = baseStyle.Width(l.width).Height(l.height)
 		l.itemStyle = itemStyle.Width(l.width)
 
-		l.Viewport.Width = l.width
-		l.Viewport.Height = l.height
+		l.viewport.Width = l.width
+		l.viewport.Height = l.height
 		return l, actions.RefreshWorkListCmd()
 	case actions.RefreshWorkListMsg:
-		l.Viewport.SetContent(l.viewContent())
+		l.viewport.SetContent(l.viewContent())
 
 		// refresh viewport offset
-		maxOffset := l.Viewport.TotalLineCount() - l.height
+		maxOffset := l.viewport.TotalLineCount() - l.height
 		switch {
-		case l.Viewport.YOffset < 0:
-			l.Viewport.YOffset = 0
-		case l.Viewport.YOffset > maxOffset:
-			l.Viewport.YOffset = maxOffset
+		case l.viewport.YOffset < 0:
+			l.viewport.YOffset = 0
+		case l.viewport.YOffset > maxOffset:
+			l.viewport.YOffset = maxOffset
 		}
 
 		return l, nil
 	case actions.ScrollWorkListMsg:
-		l.Viewport.YOffset += msg.Direction
+		l.viewport.YOffset += msg.Direction
 		return l, actions.RefreshWorkListCmd()
 	case actions.ToolbarModeMsg:
 		switch mode := msg.Mode.(type) {
 		case state.ToolbarModeEdit:
 			if mode.Index >= 0 && mode.Name == "" {
-				item := l.Manager.Get(mode.Index)
+				item := l.manager.Get(mode.Index)
 				if item == nil {
 					return l, tea.Sequence(
 						actions.ToggleNumbersCmd(false),
@@ -105,7 +94,7 @@ func (l *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	case actions.WorkEditedMsg:
-		item := l.Manager.Get(msg.Index)
+		item := l.manager.Get(msg.Index)
 		if item == nil {
 			return l, tea.Sequence(
 				actions.ToggleNumbersCmd(false),
@@ -115,7 +104,7 @@ func (l *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			)
 		}
 
-		if err := l.Manager.Edit(msg.Index, msg.Name); err != nil {
+		if err := l.manager.Edit(msg.Index, msg.Name); err != nil {
 			return l, tea.Sequence(
 				actions.ToggleNumbersCmd(false),
 				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
@@ -127,19 +116,19 @@ func (l *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		l.queue = l.RefreshQueue()
 	case actions.SetWorkListFocusMsg:
 		if msg.Index >= 0 && msg.Index < l.Len() {
-			l.FocusedItem = msg.Index
+			l.state.Focused = state.WorkListFocusedState(msg.Index)
 			break
 		}
 
-		l.FocusedItem = -1
+		l.state.Focused = nil
 	case actions.ToggleCompletedVisibilityMsg:
-		l.ShowCompleted = msg.Visible
+		l.state.ShowCompleted = msg.Visible
 		l.queue = l.RefreshQueue()
 	case actions.ToggleNumbersActionMsg:
-		l.ShowNumbers = msg.Visible
+		l.state.ShowNumbers = msg.Visible
 		l.queue = l.RefreshQueue()
 	case actions.ToolbarMoveMsg:
-		item := l.Manager.Get(msg.Source)
+		item := l.manager.Get(msg.Source)
 		if item == nil {
 			return l, tea.Sequence(
 				actions.ToggleNumbersCmd(false),
@@ -149,10 +138,7 @@ func (l *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			)
 		}
 
-		l.state = state.WorkListMovingState{
-			Source: msg.Source,
-			Active: msg.Source,
-		}
+		l.state.Moving = state.WorkListMovingState(msg.Source)
 		return l, tea.Sequence(
 			actions.ToggleNumbersCmd(false),
 			actions.RefreshWorkListCmd(),
@@ -161,39 +147,36 @@ func (l *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case actions.MoveWorkMsg:
 		switch msg.Direction {
 		case actions.MovementDirUp:
-			if s, ok := l.state.(state.WorkListMovingState); ok {
+			if s := l.state.Moving; s != nil {
 				l.queue = wq.Move(l.queue, s.Active, s.Active-1)
-
 				s.Active = max(0, s.Active-1)
-				l.state = s
 			}
 		case actions.MovementDirDown:
-			if s, ok := l.state.(state.WorkListMovingState); ok {
+			if s := l.state.Moving; s != nil {
 				l.queue = wq.Move(l.queue, s.Active, s.Active+1)
-
 				s.Active = min(s.Active+1, l.Len()-1)
-				l.state = s
 			}
 		}
 	case actions.FinishMovingWorkMsg:
-		if s, ok := l.state.(state.WorkListMovingState); ok {
+		if s := l.state.Moving; s != nil {
 			if msg.Commit {
-				l.Manager.Move(s.Source, s.Active)
+				l.manager.Move(s.Source, s.Active)
 			}
 
-			l.state = nil
+			// disable moving
+			l.state.Moving = nil
 		}
 
 		l.queue = l.RefreshQueue()
 	case actions.WorkAddedMsg:
 		// TODO: Implement adding to top of queue
-		l.Manager.AddToBottom(msg.Work)
+		l.manager.AddToBottom(msg.Work)
 		l.queue = l.RefreshQueue()
 	case actions.WorkCompletedMsg:
-		l.Manager.Complete(msg.Index)
+		l.manager.Complete(msg.Index)
 		l.queue = l.RefreshQueue()
 	case actions.WorkDeletedMsg:
-		if err := l.Manager.Delete(msg.Index); err != nil {
+		if err := l.manager.Delete(msg.Index); err != nil {
 			return l, wq.ErrorCmd(err)
 		}
 		l.queue = l.RefreshQueue()
@@ -203,13 +186,13 @@ func (l *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (l *Model) View() string {
-	return l.Viewport.View()
+	return l.viewport.View()
 }
 
 func (l *Model) RefreshQueue() []database.WorkItem {
 	queue := make([]database.WorkItem, 0)
-	for _, item := range l.Manager.Queue {
-		if !l.ShowCompleted && item.IsCompleted {
+	for _, item := range l.manager.Queue {
+		if !l.state.ShowCompleted && item.IsCompleted {
 			continue
 		}
 

@@ -5,7 +5,6 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/xprnio/work-queue/internal/database"
-	"github.com/xprnio/work-queue/internal/ui/state"
 )
 
 func (l *Model) viewContent() string {
@@ -21,12 +20,13 @@ func (l *Model) viewContent() string {
 
 func (l *Model) viewItem(item database.WorkItem, index int) string {
 	style := l.itemStyle.UnsetWidth().Faint(item.IsCompleted)
-	if l.FocusedItem >= 0 {
-		style = style.Faint(index != l.FocusedItem)
+
+	if focused := l.state.Focused; focused != nil {
+		style = style.Faint(index != focused.Index)
 	}
 
-	if s, isMoving := l.state.(state.WorkListMovingState); isMoving {
-		style = style.Faint(index != s.Active)
+	if moving := l.state.Moving; moving != nil {
+		style = style.Faint(index != moving.Active)
 	}
 
 	return l.itemStyle.Render(
@@ -39,7 +39,7 @@ func (l *Model) viewItem(item database.WorkItem, index int) string {
 }
 
 func (l *Model) viewItemPrefix(item database.WorkItem, index int) string {
-	if l.ShowNumbers {
+	if l.state.ShowNumbers {
 		return fmt.Sprintf(" %d ", index+1)
 	}
 
