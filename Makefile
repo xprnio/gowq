@@ -1,7 +1,7 @@
 .PHONY: start
 
-bin/work-queue:
-	@go build -o bin/work-queue cmd/main.go
+bin/gowq:
+	@go build -o bin/gowq cmd/main.go
 
-start: bin/work-queue
-	@bin/work-queue
+start: bin/gowq
+	@bin/gowq
