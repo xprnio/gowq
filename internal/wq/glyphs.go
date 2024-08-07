@@ -1,0 +1,3 @@
+package wq
+
+const GlyphSeparator = ""
