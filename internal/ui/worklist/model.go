@@ -18,10 +18,7 @@ type Model struct {
 
 	FocusedItem int
 
-	// item movement
-	IsMoving   bool
-	MoveSource int
-	MoveActive int
+	state state.WorkListState
 
 	// item numbers
 	ShowNumbers bool
@@ -40,7 +37,6 @@ func New(man *wq.Manager) *Model {
 	l := &Model{}
 	l.Manager = man
 	l.FocusedItem = -1
-	l.MoveActive = -1
 
 	l.style = baseStyle
 	l.itemStyle = itemStyle
@@ -153,9 +149,10 @@ func (l *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			)
 		}
 
-		l.MoveSource = msg.Source
-		l.MoveActive = msg.Source
-		l.IsMoving = true
+		l.state = state.WorkListMovingState{
+			Source: msg.Source,
+			Active: msg.Source,
+		}
 		return l, tea.Sequence(
 			actions.ToggleNumbersCmd(false),
 			actions.RefreshWorkListCmd(),
@@ -164,19 +161,29 @@ func (l *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case actions.MoveWorkMsg:
 		switch msg.Direction {
 		case actions.MovementDirUp:
-			l.queue = wq.Move(l.queue, l.MoveActive, l.MoveActive-1)
-			l.MoveActive = max(0, l.MoveActive-1)
+			if s, ok := l.state.(state.WorkListMovingState); ok {
+				l.queue = wq.Move(l.queue, s.Active, s.Active-1)
+
+				s.Active = max(0, s.Active-1)
+				l.state = s
+			}
 		case actions.MovementDirDown:
-			l.queue = wq.Move(l.queue, l.MoveActive, l.MoveActive+1)
-			l.MoveActive = min(l.MoveActive+1, l.Len()-1)
+			if s, ok := l.state.(state.WorkListMovingState); ok {
+				l.queue = wq.Move(l.queue, s.Active, s.Active+1)
+
+				s.Active = min(s.Active+1, l.Len()-1)
+				l.state = s
+			}
 		}
 	case actions.FinishMovingWorkMsg:
-		if msg.Commit {
-			l.Manager.Move(l.MoveSource, l.MoveActive)
+		if s, ok := l.state.(state.WorkListMovingState); ok {
+			if msg.Commit {
+				l.Manager.Move(s.Source, s.Active)
+			}
+
+			l.state = nil
 		}
 
-		l.MoveActive = -1
-		l.IsMoving = false
 		l.queue = l.RefreshQueue()
 	case actions.WorkAddedMsg:
 		// TODO: Implement adding to top of queue
