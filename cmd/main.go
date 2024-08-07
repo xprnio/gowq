@@ -94,15 +94,12 @@ func tryPaths(paths []string) (string, error) {
 }
 
 func databaseExists(path string) (bool, error) {
-	log.Printf("trying: %s\n", path)
 	stat, err := os.Lstat(path)
 	if err != nil {
-		log.Printf("error: %s\n", err)
 		return false, err
 	}
 
 	if stat.IsDir() {
-		log.Printf("error: is a directory\n")
 		return true, fmt.Errorf("path exists but is directory: %s", path)
 	}
 
