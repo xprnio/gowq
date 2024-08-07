@@ -11,7 +11,7 @@ import (
 )
 
 func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
-	switch mode := t.mode.(type) {
+	switch mode := t.state.Mode.(type) {
 	case state.ToolbarModeNormal:
 		switch msg.String() {
 		case "a":
@@ -28,8 +28,8 @@ func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 		case "down", "j":
 			return actions.ScrollWorkListCmd(1)
 		case "h":
-			t.ShowCompleted = !t.ShowCompleted
-			return actions.ToggleCompletedVisibilityCmd(t.ShowCompleted)
+			t.state.ShowCompleted = !t.state.ShowCompleted
+			return actions.ToggleCompletedVisibilityCmd(t.state.ShowCompleted)
 		case "m":
 			return tea.Sequence(
 				actions.ToggleNumbersCmd(true),
@@ -102,7 +102,7 @@ func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 			return tea.Sequence(
 				actions.FinishMovingWorkCmd(false),
 				actions.ToggleNumbersCmd(false),
-				actions.ToggleCompletedVisibilityCmd(t.ShowCompleted),
+				actions.ToggleCompletedVisibilityCmd(t.state.ShowCompleted),
 				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 			)
 		}
@@ -114,7 +114,7 @@ func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 				if err != nil {
 					return tea.Sequence(
 						actions.ToggleNumbersCmd(false),
-						actions.ToggleCompletedVisibilityCmd(t.ShowCompleted),
+						actions.ToggleCompletedVisibilityCmd(t.state.ShowCompleted),
 						actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 						wq.ErrorCmd(wq.InvalidIndexErr),
 					)
@@ -125,7 +125,7 @@ func (t *Model) handleInput(msg tea.KeyMsg) tea.Cmd {
 
 			return tea.Sequence(
 				actions.FinishMovingWorkCmd(true),
-				actions.ToggleCompletedVisibilityCmd(t.ShowCompleted),
+				actions.ToggleCompletedVisibilityCmd(t.state.ShowCompleted),
 				actions.ToggleNumbersCmd(false),
 				actions.ToolbarModeCmd(state.ToolbarModeNormal{}),
 			)

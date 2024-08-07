@@ -9,7 +9,7 @@ import (
 )
 
 func (t *Model) viewMode() string {
-	switch t.mode.(type) {
+	switch t.state.Mode.(type) {
 	case state.ToolbarModeNormal:
 		return modeStyle.Render("NORMAL")
 	case state.ToolbarModeAdd:
@@ -38,7 +38,7 @@ func (t *Model) viewSeparator() string {
 func (t *Model) viewContextKeys() string {
 	keys := make([]string, 0)
 
-	switch mode := t.mode.(type) {
+	switch mode := t.state.Mode.(type) {
 	case state.ToolbarModeNormal:
 		keys = append(keys,
 			"[a]dd",
@@ -47,7 +47,7 @@ func (t *Model) viewContextKeys() string {
 			"[d]elete",
 		)
 
-		if !t.ShowCompleted {
+		if !t.state.ShowCompleted {
 			keys = append(keys, "s[h]ow completed")
 		} else {
 			keys = append(keys, "[h]ide completed")
@@ -76,11 +76,11 @@ func (t *Model) viewContextKeys() string {
 }
 
 func (t *Model) viewInput() string {
-	if t.err != nil {
-		return t.err.Error()
+	if t.state.Err != nil {
+		return t.state.Err.Error()
 	}
 
-	switch mode := t.mode.(type) {
+	switch mode := t.state.Mode.(type) {
 	case
 	 state.ToolbarModeAdd,
 	 state.ToolbarModeComplete,

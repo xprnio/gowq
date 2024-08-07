@@ -4,6 +4,19 @@ import (
 	"github.com/xprnio/work-queue/internal/database"
 )
 
+type ToolbarState struct {
+	ShowCompleted bool
+
+	Mode ToolbarMode
+	Err  error
+}
+
+func NewToolbarState() ToolbarState {
+	return ToolbarState{
+		Mode: ToolbarModeNormal{},
+	}
+}
+
 type ToolbarMode interface{}
 
 type ToolbarModeNormal struct{}
@@ -17,4 +30,3 @@ type ToolbarModeEdit struct {
 }
 type ToolbarModeComplete struct{}
 type ToolbarModeDelete struct{}
-

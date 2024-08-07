@@ -10,22 +10,19 @@ import (
 )
 
 type Model struct {
-	width int
-	mode  state.ToolbarMode
-	style lipgloss.Style
-	err   error
-
-	ShowCompleted bool
-
 	input textinput.Model
+
+	state state.ToolbarState
+
+	style lipgloss.Style
+	width int
 }
 
 func New() *Model {
 	t := &Model{}
-	t.mode = state.ToolbarModeNormal{}
-	t.style = baseStyle
-
 	t.input = textinput.New()
+	t.state = state.NewToolbarState()
+	t.style = baseStyle
 	return t
 }
 
@@ -43,7 +40,7 @@ func (t *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 		t.style = t.style.Width(t.width)
 
 	case wq.ErrorMsg:
-		t.err = msg.Err
+		t.state.Err = msg.Err
 		return t, nil
 
 	case actions.ToolbarModeMsg:
@@ -85,10 +82,10 @@ func (t *Model) View() string {
 }
 
 func (t *Model) updateToolbarMode(msg actions.ToolbarModeMsg) tea.Cmd {
-	t.mode = msg.Mode
-	t.err = nil
+	t.state.Mode = msg.Mode
+	t.state.Err = nil
 
-	switch mode := t.mode.(type) {
+	switch mode := t.state.Mode.(type) {
 	case state.ToolbarModeAdd:
 		t.input.Prompt = "name: "
 		t.input.SetValue("")
