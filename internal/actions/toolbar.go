@@ -21,6 +21,6 @@ type ToolbarModeMsg struct {
 
 func ToolbarModeCmd(mode state.ToolbarMode) tea.Cmd {
 	return func() tea.Msg {
-    return ToolbarModeMsg{Mode: mode}
+		return ToolbarModeMsg{Mode: mode}
 	}
 }

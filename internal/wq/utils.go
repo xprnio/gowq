@@ -47,5 +47,5 @@ func Move[T any](arr []T, src, dest int) []T {
 		}
 	}
 
-  return result
+	return result
 }

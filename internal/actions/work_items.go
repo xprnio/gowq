@@ -32,6 +32,7 @@ const (
 	MovementDirUp   MovementDir = "up"
 	MovementDirDown MovementDir = "down"
 )
+
 type MoveWorkMsg struct {
 	Direction MovementDir
 }
@@ -72,4 +73,3 @@ func MoveWorkCmd(dir MovementDir) tea.Cmd {
 		return MoveWorkMsg{dir}
 	}
 }
-

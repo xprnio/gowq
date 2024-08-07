@@ -55,9 +55,9 @@ func (t *Model) viewContextKeys() string {
 
 		keys = append(keys, "[q]uit")
 	case
-	 state.ToolbarModeAdd,
-	 state.ToolbarModeComplete,
-	 state.ToolbarModeDelete:
+		state.ToolbarModeAdd,
+		state.ToolbarModeComplete,
+		state.ToolbarModeDelete:
 		keys = append(keys, "[esc] cancel")
 	case state.ToolbarModeEdit:
 		if mode.Index >= 0 {
@@ -82,9 +82,9 @@ func (t *Model) viewInput() string {
 
 	switch mode := t.state.Mode.(type) {
 	case
-	 state.ToolbarModeAdd,
-	 state.ToolbarModeComplete,
-	 state.ToolbarModeDelete:
+		state.ToolbarModeAdd,
+		state.ToolbarModeComplete,
+		state.ToolbarModeDelete:
 		return t.input.View()
 	case state.ToolbarModeEdit:
 		if mode.Index < 0 {

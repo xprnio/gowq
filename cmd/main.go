@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-  db, err := database.NewDatabase("/home/ragnar/.config/wq/database.sqlite")
+	db, err := database.NewDatabase("/home/ragnar/.config/wq/database.sqlite")
 	if err != nil {
 		log.Fatal(err)
 	}
